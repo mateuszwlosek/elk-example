@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: orders-service
+  zipkin:
+    baseUrl: ${ZIPKIN_URL}
+  data:
+    mongodb:
+      host: mongodb-orders-service
+      database: orders-service
+
+server:
+  port: 6060

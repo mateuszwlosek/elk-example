@@ -1,0 +1,58 @@
+version: "3"
+services:
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.6.1
+    ports: 
+      - "5601:5601"
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - discovery.type=single-node
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.6.1 
+    ports:
+      - "4567:4567"
+      - "4560:4560"
+      - "9600:9600"
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+  mongodb-books-service:
+    image: mongo:4.2.6
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: books-service
+    volumes:
+      - ./database/init-data.js:/docker-entrypoint-initdb.d/init-data.js
+  mongodb-orders-service:
+    image: mongo:4.2.6
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: orders-service
+  orders-service:
+    build: ./orders-service
+    ports:
+      - "8383:6060"
+    environment:
+      - LOGSTASH_URL=logstash:4560
+      - ZIPKIN_URL=http://zipkin:9411
+    depends_on:
+      - mongodb-orders-service
+  books-service:
+    build: ./books-service
+    ports:
+      - "8484:6060"
+    environment:
+      - ORDERS_SERVICE_SERVER_URL=http://orders-service:6060 
+      - LOGSTASH_URL=logstash:4560
+      - ZIPKIN_URL=http://zipkin:9411
+    depends_on:
+      - mongodb-books-service

@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: books-service
+  zipkin:
+    baseUrl: ${ZIPKIN_URL}
+  data:
+    mongodb:
+      host: mongodb-books-service
+      database: books-service
+
+application:
+  orders-service:
+    url: ${ORDERS_SERVICE_SERVER_URL}
+
+server: 
+  port: 6060
